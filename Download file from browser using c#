@@ -1,0 +1,39 @@
+
+# webclient function using from downloading file
+
+
+ public bool downloadFile(string webUrl, string locationTodownload)
+        {
+            try
+            {
+                WebClient objWebClient = new WebClient();
+                objWebClient.DownloadFile(webUrl, locationTodownload);
+                return true;
+            }
+            catch (Exception)
+            {
+
+                return false;
+            }
+
+        }
+        
+        
+        #collecting viewstate in form 
+        
+        
+        public string laca4_ExtractViewState(string s)
+        {
+            string viewStateNameDelimiter = "__VIEWSTATE";
+            string valueDelimiter = "value=\"";
+
+            int viewStateNamePosition = s.IndexOf(viewStateNameDelimiter);
+            int viewStateValuePosition = s.IndexOf(
+                  valueDelimiter, viewStateNamePosition
+               );
+
+            int viewStateStartPosition = viewStateValuePosition + valueDelimiter.Length;
+            int viewStateEndPosition = s.IndexOf("\"", viewStateStartPosition);
+
+            return s.Substring(viewStateStartPosition, viewStateEndPosition - viewStateStartPosition);
+        }
