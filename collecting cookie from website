@@ -1,0 +1,45 @@
+
+
+# collecting cookie from website
+
+ public CookieCollection cookie_GetHeaderData(Uri uri)
+        {
+            CookieContainer cookieContainer = new CookieContainer();
+
+            HttpWebRequest webRequest = WebRequest.Create(uri) as HttpWebRequest;
+            webRequest.CookieContainer = cookieContainer;
+            StreamReader responseReader = new StreamReader(webRequest.GetResponse().GetResponseStream());
+            string responseData = responseReader.ReadToEnd();
+            responseReader.Close();
+            HttpWebResponse response = (HttpWebResponse)webRequest.GetResponse();
+
+            response.Close();
+            return response.Cookies;
+        }
+        
+        
+        
+        # sending request using form data
+        
+         public string GetrestData(Uri uri, string fromdate, string todate)
+        {
+            string content = "";
+            var client = new RestClient("https://www.opn.ca6.uscourts.gov/opinions/opinions.php"); 
+            client.Timeout = -1;
+            var request = new RestRequest(Method.POST);
+            request.AlwaysMultipartFormData = true;
+            request.AddParameter("FROMDATE", "" + fromdate + "");
+            request.AddParameter("TODATE", "" + todate + "");
+            request.AddParameter("puid", "$puid");
+            IRestResponse response = client.Execute(request);
+            string code = response.StatusCode.ToString();
+
+            if (code == "OK")
+            {
+                content = response.Content;
+
+            }
+
+            return content;
+
+        }
