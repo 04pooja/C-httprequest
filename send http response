@@ -1,0 +1,55 @@
+# Sending httpresponse from getting data from website
+
+public string GetPageSource(Uri uri)
+       {
+            string rawHtml = "";
+            if (uri == null)
+                throw new ArgumentNullException("uri");
+            uri = (uri.ToString().StartsWith("hhttps")) ? new Uri(uri.ToString().Replace("hhttps", "https"), UriKind.Absolute) : uri;
+
+            HttpWebRequest request = null;
+            HttpWebResponse response = null;
+            lock (uri)
+            {
+                if (uri.ToString().StartsWith("http://") || uri.ToString().StartsWith("https://"))
+                {
+                    try
+                    {
+                        ServicePointManager.Expect100Continue = true;
+                        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
+                               | SecurityProtocolType.Tls11
+                               | SecurityProtocolType.Tls12
+                               | SecurityProtocolType.Ssl3;
+                        request = WebRequest.CreateHttp(uri);
+                        request.AllowAutoRedirect = true;
+                        request.MaximumAutomaticRedirections = 2;
+                        request.Accept = "*/*";
+                        request.Timeout = 60000;
+                        request.ReadWriteTimeout = 60000;
+                        response = (HttpWebResponse)request.GetResponse();
+                        string StatusCode = response.StatusCode.ToString();
+
+                        if (StatusCode == "OK")
+                        {
+                            using (StreamReader sr = new StreamReader(response.GetResponseStream()))
+                            {
+                                rawHtml = sr.ReadToEnd();
+                                sr.Close();
+                            }
+                        }
+                        response.Close();
+
+                    }
+                    catch (WebException e)
+                    {
+                        rawHtml = "Error occured while executing request";
+                    }
+                    finally
+                    { }
+
+                }
+            }
+            return rawHtml;
+
+        }
+
