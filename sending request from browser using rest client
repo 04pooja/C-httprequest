@@ -1,0 +1,31 @@
+
+
+#  sending request from browser using rest client method
+
+# getrestdata function
+# uri froimdata and todate is parameter
+# this function need three parameter.
+
+
+ public string GetrestData(Uri uri, string fromdate, string todate)
+        {
+            string content = "";
+            var client = new RestClient("https://www.opn.ca6.uscourts.gov/opinions/opinions.php");
+            client.Timeout = -1;
+            var request = new RestRequest(Method.POST);
+            request.AlwaysMultipartFormData = true;
+            request.AddParameter("FROMDATE", "" + fromdate + "");
+            request.AddParameter("TODATE", "" + todate + "");
+            request.AddParameter("puid", "$puid");
+            IRestResponse response = client.Execute(request);
+            string code = response.StatusCode.ToString();
+
+            if (code == "OK")
+            {
+                content = response.Content;
+
+            }
+
+            return content;
+
+        }
