@@ -1,0 +1,97 @@
+
+
+# we create class file 
+
+
+class headermodel{
+
+public string SessionId { get; set;}
+
+public string CMSCurrentTheme { get; set;}
+
+public string CMSPreferredCulture { get; set;}
+
+public string VisitorStatus { get; set;}
+
+}
+
+
+        public string ExtractViewState(string s)
+        {
+            string viewStateNameDelimiter = "__VIEWSTATE";
+            string valueDelimiter = "value=\"";
+
+            int viewStateNamePosition = s.IndexOf(viewStateNameDelimiter);
+            int viewStateValuePosition = s.IndexOf(
+                  valueDelimiter, viewStateNamePosition
+               );
+
+            int viewStateStartPosition = viewStateValuePosition + valueDelimiter.Length;
+            int viewStateEndPosition = s.IndexOf("\"", viewStateStartPosition);
+
+            return s.Substring(viewStateStartPosition, viewStateEndPosition - viewStateStartPosition);
+        }
+
+
+ public string GetPOSTURLContent(string WebUrl, string PageNumber, string typeofdata, string typeofcourt, header_model Header)
+        {
+            try
+            {
+                HttpWebRequest WebQuest = (HttpWebRequest)WebRequest.Create(WebUrl);
+                WebQuest.Method = "POST";
+                WebQuest.CookieContainer = new CookieContainer();
+                Cookie CoookieOne = new Cookie("ASP.NET_SessionId", "" + Header.SessionId + "", "/", "www.kscourts.org");
+                Cookie CoookieTwo = new Cookie("CMSCurrentTheme", "Meganav-test_1", "/", "www.kscourts.org");
+                Cookie CoookieThree = new Cookie("CMSPreferredCulture", "en-US", "/", "www.kscourts.org");
+                Cookie CoookieFour = new Cookie("VisitorStatus", "11062569591", "/", "www.kscourts.org");
+                WebQuest.CookieContainer.Add(CoookieOne);
+                WebQuest.CookieContainer.Add(CoookieTwo);
+                WebQuest.CookieContainer.Add(CoookieThree);
+                WebQuest.CookieContainer.Add(CoookieFour);
+                Dictionary<string, string> NVCPair = new Dictionary<string, string>();
+                NVCPair.Add("manScript_HiddenField", ";;AjaxControlToolkit, Version=4.1.60919.0, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e:en-US:ee051b62-9cd6-49a5-87bb-93c07bc43d63:475a4ef5:effe2a26:7e63a579:5546a2b:d2e10b12:f3d989c9");
+                NVCPair.Add("__EVENTTARGET", "p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl06$UniversalPager$pagerElem");
+                NVCPair.Add("__EVENTARGUMENT", "" + PageNumber + "");
+                NVCPair.Add("__VIEWSTATE", "" + Header.View_State + "");
+                NVCPair.Add("lng", "en-US");
+                NVCPair.Add("__VIEWSTATEGENERATOR", "A5343185");
+                NVCPair.Add("__SCROLLPOSITIONX", "0");
+                NVCPair.Add("__SCROLLPOSITIONY", "2448");
+                NVCPair.Add("p$lt$ctl02$SmartSearchBox$txtWord_exWatermark_ClientState", "");
+                NVCPair.Add("p$lt$ctl02$SmartSearchBox$txtWord", "");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl02$OpinionFilter1$filterControl$txtSearch", "");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl02$OpinionFilter1$filterControl$drpPublished", "" + typeofdata + "");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl02$OpinionFilter1$filterControl$drpCourt", "" + typeofcourt + "");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl02$OpinionFilter1$filterControl$drpSortBy", "Opinion Date");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl03$AccordionLayout1$acc_AccordionExtender_ClientState", "-1");
+                NVCPair.Add("p$lt$zonePagePlaceholder$pageplaceholder$p$lt$ctl07$AccordionLayout$acc_AccordionExtender_ClientState", "-1");
+                NVCPair.Add("p$lt$ctl04$SmartSearchBox1$txtWord_exWatermark_ClientState", "-1");
+                NVCPair.Add("p$lt$ctl04$SmartSearchBox1$txtWord", "");
+
+                string Boundry = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+                byte[] BoundaryBytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + Boundry + "\r\n");
+                WebQuest.ContentType = "multipart/form-data; boundary=" + Boundry;
+                Stream DataStream = WebQuest.GetRequestStream();
+                string FormdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
+
+                foreach (string key in NVCPair.Keys)
+                {
+                    DataStream.Write(BoundaryBytes, 0, BoundaryBytes.Length);
+                    string formitem = string.Format(FormdataTemplate, key, NVCPair[key]);
+                    byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
+                    DataStream.Write(formitembytes, 0, formitembytes.Length);
+                }
+
+                DataStream.Write(BoundaryBytes, 0, BoundaryBytes.Length);
+                DataStream.Close();
+                WebResponse response = WebQuest.GetResponse();
+                Stream dataStream1 = response.GetResponseStream();
+                StreamReader reader = new StreamReader(dataStream1);
+                string ResponseFromServer = reader.ReadToEnd();
+                return ResponseFromServer;
+            }
+            catch (Exception Ex)
+            {
+                return "Error: Error occured while executing the http request";
+            }
+        }
